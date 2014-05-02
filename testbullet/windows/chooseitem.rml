@@ -1,0 +1,64 @@
+<rml>
+	<head>
+		<title>dialogue</title>
+		<link type="text/template" href="windowx.rml" />
+		<style>
+			body
+			{
+				width: 600px;
+				height: 300px;
+				position: absolute;
+				/*top : 15px;
+				left : 200px;*/
+				margin: auto;
+			}
+
+			div#title_bar div#icon
+			{
+				icon-image-s: 230px 281px;
+				icon-image-t: 152px 191px;
+
+				display: none;
+			}
+
+			form div
+			{
+				width: 200px;
+				margin: auto;
+			}
+		</style>
+	<script>
+from shimstar.user.user import *
+from shimstar.gui.core.rocketiteminfo import *
+def onClose(doc):
+	doc.Hide()
+def onLoad(doc):
+	titleBar=doc.GetElementById("title")
+	titleBar.inner_rml="Choose"
+	
+def onShowItemInfo(doc,att,val):
+	attTab=att.split(',')
+	valTab=val.split(',')
+	listOfAttr={'titi':'toto'}
+	listOfAttr.clear()
+	i=0
+	for a in attTab:
+		listOfAttr[a]=valTab[i]
+		i+=1
+	rocketItemInfo.getInstance().showWindow(listOfAttr)	
+	
+def onHideItemInfo():
+	rocketItemInfo.getInstance().hideWindow()
+	
+def onInstallItem(doc,idItem,idSlot):
+	user.instance.getCurrentCharacter().getShip().installItem(int(idItem),int(idSlot))
+	self.onHideItemInfo()
+	
+	</script>
+	
+	</head>
+	<body template="pywindow" onLoad="onLoad(document)">
+		<div id="contentchoose">
+		</div>
+	</body>
+</rml>

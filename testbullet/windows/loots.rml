@@ -1,0 +1,65 @@
+<rml>
+	<head>
+		<title>dialogue</title>
+		<link type="text/template" href="windowx.rml" />
+		<style>
+			body
+			{
+				width: 600px;
+				height: 400px;
+				position: absolute;
+				
+				margin: auto;
+			}
+
+			div#title_bar div#icon
+			{
+				icon-image-s: 230px 281px;
+				icon-image-t: 152px 191px;
+
+				display: none;
+			}
+
+			form div
+			{
+				width: 200px;
+				margin: auto;
+			}
+		</style>
+	<script>
+	
+
+def onClose(doc):
+	doc.Hide()
+def onLoad(doc):
+	titleBar=doc.GetElementById("title")
+	titleBar.inner_rml="Loots"
+
+def onTakeAll(doc):
+	pass
+	
+def onShowItemInfo(doc,att,val):
+	attTab=att.split(',')
+	valTab=val.split(',')
+	listOfAttr={'titi':'toto'}
+	listOfAttr.clear()
+	i=0
+	for a in attTab:
+		listOfAttr[a]=valTab[i]
+		i+=1
+	rocketItemInfo.getInstance().showWindow(listOfAttr)	
+	
+def onHideItemInfo():
+	rocketItemInfo.getInstance().hideWindow()
+	
+	</script>
+	
+	</head>
+	<body template="pywindow" onLoad="onLoad(document)">
+		<div id="contentloots">
+		</div>
+		<div style="position:absolute; top:390px; left:180px;">
+					<button class="topress" style="width:150px;height:30px;" id="takeall" onclick="onTakeAll(document);">Tout prendre</button>
+			</div>
+	</body>
+</rml>

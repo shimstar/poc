@@ -1,0 +1,49 @@
+<rml>
+	<head>
+		<title>quitgame</title>
+		<link type="text/template" href="window.rml" />
+		<style>
+			body
+			{
+				width: 400px;
+				height: 350px;
+				position: absolute;
+			/*top : 25px;
+				left : 300px;*/
+				margin: auto;
+			}
+
+			div#title_bar div#icon
+			{
+				icon-image-s: 230px 281px;
+				icon-image-t: 152px 191px;
+
+				display: none;
+			}
+
+			form div
+			{
+				width: 200px;
+				margin: auto;
+			}
+		</style>
+	<script>
+	
+def onLoad(doc):
+	titleBar=doc.GetElementById("title")
+	titleBar.inner_rml="Tutoriel"
+	
+def onOk(doc):
+	doc.Hide()
+		
+	</script>
+	</head>
+	<body template="pywindow" onLoad="onLoad(document);">
+	<div style="position:absolute; top:80px; left:20px;width:250px;">
+
+		</div>
+			<div style="position:absolute; top:350px; left:-0px;">
+			<button class="topress" style="width:200px;height:30px;" onclick="onOk(document)" disabled="1" id="btnok">Ok</button>
+		</div>
+	</body>
+</rml>

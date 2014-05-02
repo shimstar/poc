@@ -1,0 +1,43 @@
+<rml>
+	<head>
+		<title>herodelete</title>
+		<link type="text/template" href="window.rml" />
+		<style>
+			body
+			{
+				width: 400px;
+				height: 50px;
+				position: absolute;
+				top : 600px;
+				left : 900px;
+				margin: auto;
+			}
+
+			div#title_bar div#icon
+			{
+				icon-image-s: 230px 281px;
+				icon-image-t: 152px 191px;
+
+				display: none;
+			}
+
+			form div
+			{
+				width: 200px;
+				margin: auto;
+			}
+		</style>
+	<script>
+def onLoad(doc):
+	pass
+	</script>
+	</head>
+	<body>
+	<div id="life" style="position:absolute;top:45px;left:0px;width:150px;">
+		<button class="roundleft" style="width:50px;height:20px;font-size:10px;">Coque</button>
+	</div>
+	<div id="lifei" style="position:absolute;top:60px;left:100px;width:50px;">
+			<img src="" id="lifeimg"/>
+	</div>
+	</body>
+</rml>

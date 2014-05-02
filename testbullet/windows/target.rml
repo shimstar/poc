@@ -1,0 +1,43 @@
+<rml>
+	<head>
+		<title>herodelete</title>
+		<link type="text/template" href="window.rml" />
+		<style>
+			body
+			{
+				width: 32px;
+				height: 32px;
+				position: absolute;
+			/*top : 25px;
+				left : 300px;*/
+				margin: auto;
+			}
+
+			div#title_bar div#icon
+			{
+				icon-image-s: 230px 281px;
+				icon-image-t: 152px 191px;
+
+				display: none;
+			}
+
+			form div
+			{
+				width: 200px;
+				margin: auto;
+			}
+		</style>
+	<script>
+from shimconfig import *
+def config(doc):
+	b=doc.GetElementById('target')
+	b.SetAttribute("src",shimConfig.getInstance().getRessourceDirectory() + "images\\gui\\target.png")
+	b=doc.GetElementById('pg')
+	b.SetAttribute("src",shimConfig.getInstance().getRessourceDirectory() + "images\\gui\\pgb60.png")
+	</script>
+	</head>
+	<body onLoad="config(document);">
+		<img src="" id="pg" height="5" width="65" style="display:None;"/>
+		<img src="" id="target"/>
+	</body>
+</rml>

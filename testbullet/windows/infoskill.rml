@@ -1,0 +1,63 @@
+<rml>
+	<head>
+		<title>quitgame</title>
+		<link type="text/template" href="windowx.rml" />
+		<style>
+			body
+			{
+				width: 300px;
+				height: 250px;
+				position: absolute;
+			/*top : 25px;
+				left : 300px;*/
+				margin: auto;
+			}
+
+			div#title_bar div#icon
+			{
+				icon-image-s: 230px 281px;
+				icon-image-t: 152px 191px;
+
+				display: none;
+			}
+
+			form div
+			{
+				width: 200px;
+				margin: auto;
+			}
+		</style>
+	<script>
+from shimstar.network.network import *
+from shimstar.user.user import *
+from shimstar.game.gamestate import *
+def onLoad(doc):
+	titleBar=doc.GetElementById("title")
+	titleBar.inner_rml="InfoSkill"
+	
+def onClose(doc):
+	doc.Hide()
+	
+def onLearn(doc):
+	idskill=doc.GetElementById("idskill").value
+	network.reference.sendMessage(C_CHAR_UPDATE,str(user.instance.getId())+ "/" +str(user.instance.getCurrentCharacter().getId())+"/skilltolearn="+str(idskill))
+	doc.Hide()
+	
+	</script>
+	</head>
+	<body template="pywindow" onLoad="onLoad(document);">
+		<div style="position:absolute; top:-10070px; left:0px;">
+					<input type="hidden" id="idskill" value="0"/>
+		</div>
+		<div style="position:absolute; top:70px; left:0px;">
+					<button class="roundleft" style="width:250px;height:30px;" id="name"></button>
+		</div>
+		<div style="position:absolute; top:140px; left:00px;">
+					<button class="roundleft" style="width:250px;height:80px;font-size:10px;" id="text"></button>
+		</div>
+		<div style="position:absolute; top:250px; left:00px;">
+					<button class="topress" style="width:250px;height:30px;" id="apprendre" onclick="onLearn(document);">Apprendre</button>
+		</div>
+
+	</body>
+</rml>

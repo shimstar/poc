@@ -1,0 +1,115 @@
+<rml>
+	<head>
+		<title>herochoosend</title>
+		<link type="text/template" href="window.rml" />
+		<style>
+			body
+			{
+				width: 100px;
+				height: 400px;
+				position: absolute;
+				top : 10px;
+				left : 20px;
+				margin: auto;
+			}
+
+			div#title_bar div#icon
+			{
+				icon-image-s: 230px 281px;
+				icon-image-t: 152px 191px;
+
+				display: none;
+			}
+
+			form div
+			{
+				width: 200px;
+				margin: auto;
+			}
+		</style>
+	<script>
+from shimstar.world.zone.station import *
+from shimstar.core.shimconfig import *
+from shimstar.gui.core.rocketinventory import *
+from shimstar.gui.core.rocketskill import *
+from shimstar.gui.station.rocketship import *
+
+def onLoad(doc):
+	titleBar=doc.GetElementById("title")
+	titleBar.inner_rml="Menus"
+
+def onExit(doc):
+	idStation=doc.GetElementById("idobj").value
+	s=station.getStationById(idStation)
+	menuState.instance.setNewZone(s.getExitZone())
+	menuState.instance.setState(C_CHANGEZONE)
+	
+def onShowInventory(doc):
+	rocketInventory.getInstance().getWindow()
+	
+def onShowSkills(doc):
+	rocketSkill.getInstance().getWindow()
+	
+def onShip(doc):
+	rocketShip.getInstance().getWindow()
+	
+def onShowNpc(doc):
+	listOfDoc=doc.context.documents
+	personnelDoc=None
+	for l in listOfDoc:
+		if l.title=="personnel":
+			personnelDoc=l
+			break
+			
+	if personnelDoc==None:
+		personnelDoc=doc.context.LoadDocument('windows/personnel.rml')
+	personnelDoc.Show()
+	content=personnelDoc.GetElementById("contentpnj")
+	idStation=doc.GetElementById("idobj").value
+	s=station.getStationById(idStation)
+	listOfNpc=s.getListOfNpc()
+	i=0
+	for l in listOfNpc:
+		div=personnelDoc.CreateElement("div")
+		div.SetAttribute("style","position:absolute;top:100px;left:" + str((50+i*150)) + "px;width:150px;")
+		el=personnelDoc.CreateElement("img")
+		face=l.getFace()
+		face=shimConfig.getInstance().getRessourceDirectory() + "images\\faces\\" + face + ".png"
+		#~ face="../datafiles/images/faces/" + face + ".png"
+		el.SetAttribute("src",str(face))
+		el.SetAttribute("id",str(l.getId()))
+		div.AddEventListener("click","onPersonnelChoice(document," + str(l.getId()) + ")")
+	
+		div.AppendChild(el)
+		content.AppendChild(div)
+		i+=1
+		
+
+	</script>
+	
+	</head>
+	<body template="pywindow" onLoad="onLoad(document);">
+		<div style="position:absolute; top:-1080px; left:-1050px;;width:100px;">
+			<input type="hidden" name="idchar" id="idobj" value=""/>
+		</div>
+		<div style="position:absolute; top:60px; left:5px;width:100px;" onclick="onShowInventory(document);">
+		<button class="topress" style="width:100px;height:20px;font-size:10;" >Soute</button>
+		</div>
+		<div style="position:absolute; top:100px; left:5px;width:100px;" onclick="onShip(document);">
+		<button class="topress" style="width:100px;height:20px;font-size:10;">Vaisseau</button>
+		</div>
+		<div style="position:absolute; top:140px; left:5px;width:100px;" onclick="onShowNpc(document);">
+		<button class="topress" style="width:100px;height:20px;font-size: 10;">Personnel</button>
+		</div>
+		<div style="position:absolute; top:180px; left:5px;width:100px;" onclick="onShowSkills(document);">
+		<button class="topress" style="width:100px;height:20px;font-size: 10;">Competences</button>
+		</div>
+		<div style="position:absolute; top:220px; left:5px;width:100px;">
+		<button class="topress" style="width:100px;height:20px;font-size: 10;">Missions</button>
+		</div>
+		<div style="position:absolute; top:260px; left:5px;width:100px;" onclick="onExit(document);">
+		<button class="topress" style="width:100px;height:20px;font-size: 10;">Sortir</button>
+		</div>
+	</body>
+</rml>
+

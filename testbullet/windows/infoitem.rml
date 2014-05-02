@@ -1,0 +1,45 @@
+<rml>
+	<head>
+		<title>quitgame</title>
+		<link type="text/template" href="window.rml" />
+		<style>
+			body
+			{
+				width: 300px;
+				height: 250px;
+				position: absolute;
+			/*top : 25px;
+				left : 300px;*/
+				margin: auto;
+			}
+
+			div#title_bar div#icon
+			{
+				icon-image-s: 230px 281px;
+				icon-image-t: 152px 191px;
+
+				display: none;
+			}
+
+			form div
+			{
+				width: 200px;
+				margin: auto;
+			}
+		</style>
+	<script>
+from shimstar.game.gamestate import *
+def onLoad(doc):
+	titleBar=doc.GetElementById("title")
+	titleBar.inner_rml="Info"
+	
+		
+	doc.Hide()
+	</script>
+	</head>
+	<body template="pywindow" onLoad="onLoad(document);">
+		<div id="contentitem">
+		</div>
+
+	</body>
+</rml>

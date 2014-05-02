@@ -1,0 +1,52 @@
+<rml>
+	<head>
+		<title>dialogue</title>
+		<link type="text/template" href="windowx.rml" />
+		<style>
+			body
+			{
+				width: 1000px;
+				height: 600px;
+				position: absolute;
+				top : 15px;
+				left : 200px;
+				margin: auto;
+			}
+
+			div#title_bar div#icon
+			{
+				icon-image-s: 230px 281px;
+				icon-image-t: 152px 191px;
+
+				display: none;
+			}
+
+			form div
+			{
+				width: 200px;
+				margin: auto;
+			}
+		</style>
+	<script>
+	
+from shimstar.gui.core.rocketskill import *
+
+def onClose(doc):
+	doc.Hide()
+def onLoad(doc):
+	titleBar=doc.GetElementById("title")
+	titleBar.inner_rml="Competences"
+	
+def onInfo(doc,id):
+	rocketSkill.getInstance().showInfoWindow(id)
+
+def onExpand(doc,id):
+	rocketSkill.getInstance().reloadSkill(id)
+	</script>
+	
+	</head>
+	<body template="pywindow" onLoad="onLoad(document)">
+		<div id="contentskill">
+		</div>
+	</body>
+</rml>

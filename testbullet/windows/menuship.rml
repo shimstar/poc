@@ -1,0 +1,81 @@
+<rml>
+	<head>
+		<title>dialogue</title>
+		<link type="text/template" href="windowx.rml" />
+		<style>
+			body
+			{
+				width: 1000px;
+				height: 600px;
+				position: absolute;
+				top : 15px;
+				left : 200px;
+				margin: auto;
+			}
+
+			div#title_bar div#icon
+			{
+				icon-image-s: 230px 281px;
+				icon-image-t: 152px 191px;
+
+				display: none;
+			}
+
+			form div
+			{
+				width: 200px;
+				margin: auto;
+			}
+		</style>
+	<script>
+from shimstar.core.shimconfig import *
+from shimstar.gui.core.rocketiteminfo import *
+from shimstar.gui.station.rocketship import *
+from shimstar.user.user import *
+def onClose(doc):
+	doc.Hide()
+def onLoad(doc):
+	titleBar=doc.GetElementById("title")
+	titleBar.inner_rml="Vaisseau"
+	img=doc.GetElementById("background")
+	img.SetAttribute("src",shimConfig.getInstance().getRessourceDirectory() + "images\\gui\\ship1.png")
+
+def onShowItemInfo(doc,att,val):
+	attTab=att.split(',')
+	valTab=val.split(',')
+	listOfAttr={'titi':'toto'}
+	listOfAttr.clear()
+	i=0
+	for a in attTab:
+		listOfAttr[a]=valTab[i]
+		i+=1
+	rocketItemInfo.getInstance().showWindow(listOfAttr)	
+	
+def onHideItemInfo():
+	rocketItemInfo.getInstance().hideWindow()
+	
+def onChooseItem(idslot):
+	win=rocketShip.getInstance().getInstallWindow()
+	slots=user.instance.getCurrentCharacter().getShip().getSlots()
+	uninstall=win.GetElementById("uninstall")
+	for s in slots:
+		if s.getId()==int(idslot):
+			if s.getItem()==None:
+				uninstall.SetAttribute("style","width:100px;height:30px;display:None;")
+			else:
+				uninstall.SetAttribute("style","position:absolute; top:110px; left:-0px;display:Block;")
+				break
+	winIdslot=win.GetElementById("idslot")
+	winIdslot.value=str(idslot)
+	
+	win.Show()
+		
+	</script>
+	
+	</head>
+	<body template="pywindow" onLoad="onLoad(document)">
+	<img src="" id="background" width="1000" height="600" style="z-index: -20;"/>
+		<div id="contentship">
+		</div>
+	</body>
+</rml>
