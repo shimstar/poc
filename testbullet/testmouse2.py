@@ -2,17 +2,27 @@
 #~ loadPrcFileData("", "threading-model Cull/Draw")
 import xml.dom.minidom
 import os, sys
+import math
+from pandac.PandaModules import CollisionTraverser,CollisionNode
+from pandac.PandaModules import CollisionHandlerQueue,CollisionRay
 import direct.directbase.DirectStart
 from direct.showbase.DirectObject import DirectObject
-from panda3d.core import Vec3
+from panda3d.core import Vec3,Quat
 from panda3d.bullet import *
-from panda3d.core import BitMask32
+from panda3d.core import *
 from panda3d.core import NodePath
 from direct.showbase.InputStateGlobal import inputState
 from panda3d.bullet import BulletDebugNode
 
 class bulletTest(DirectObject):
 	def __init__(self):
+		self.windowSizeX = base.win.getXSize()
+		self.windowSizeY = base.win.getYSize()
+		self.centerX = self.windowSizeX / 2
+		self.centerY = self.windowSizeY / 2
+		self.factor=float(self.windowSizeX)/float(self.windowSizeY)
+		print self.factor
+		print str(self.windowSizeX) + "/" + str(self.windowSizeY)
 		self.world = BulletWorld()
 		self.world.setGravity(Vec3(0, 0, 0))
 		self.worldNP = render.attachNewNode('World')
@@ -28,23 +38,46 @@ class bulletTest(DirectObject):
 		self.box.reparentTo(render)
 		self.box.setLightOff()
 		self.box.clearFog()
-		
+		self.mousebtn = [0,0,0]
 		self.debugNP = self.worldNP.attachNewNode(BulletDebugNode('Debug'))
 		self.debugNP.hide()
 		self.world.setDebugNode(self.debugNP.node())
-		
+		self.picker = CollisionTraverser()            #Make a traverser
+		base.cTrav  = CollisionTraverser()
+		self.hdlCollider=CollisionHandlerEvent()
+		self.hdlCollider.addInPattern('into-%in')
+		self.hdlCollider.addOutPattern('outof-%in')
+		self.pickerNode=CollisionNode('mouseRay')
+		self.pickerNP=base.camera.attachNewNode(self.pickerNode)
+		self.pickerNode.setFromCollideMask(GeomNode.getDefaultCollideMask())
+		self.pickerRay=CollisionRay()
+		self.pq     = CollisionHandlerQueue()         #Make a handler
+		self.pickerNode.addSolid(self.pickerRay)
+		self.picker.addCollider(self.pickerNP, self.pq)
+		taskMgr.add(self.pickmouse,"pickmouse")
+		self.pointToLookAt=Vec3(0,0,0)
 		self.accept('f1', self.toggleWireframe)
 		self.accept('f2', self.toggleTexture)
 		self.accept('f3', self.toggleDebug)
 		self.accept('space', self.fire)
+		self.accept("mouse1", self.setMouseBtn, [0, 1])
+		self.accept("mouse1-up", self.setMouseBtn, [0, 0])
+		self.accept("mouse2", self.setMouseBtn, [1, 1])
+		self.accept("mouse2-up", self.setMouseBtn, [1, 0])
+		self.accept("mouse3", self.setMouseBtn, [2, 1])
+		self.accept("mouse3-up", self.setMouseBtn, [2, 0])
 		self.accept("wheel_up", self.speedUp,[5])
 		self.accept("wheel_down", self.speedUp,[-5])
 		#~ self.accept("wheel_down",self.wheelDown)
 		self.bullet=[]
 
 		
-		visNP = loader.loadModel('fighter.egg')
-		visNP2 = loader.loadModel('fighter.egg')
+		#~ visNP = loader.loadModel('fighter.egg')
+		#~ visNP2 = loader.loadModel('fighter.egg')
+		visNP = loader.loadModel('dark2.egg')
+		visNP2 = loader.loadModel('dark2.egg')
+		#~ text = loader.loadTexture("dark_fighter_6_color.png")
+		#~ visNP.setTexture(text)
 		#~ visNP.ls()
 		geom = visNP.findAllMatches('**/+GeomNode').getPath(0).node().getGeom(0)
 		shape=BulletConvexHullShape()
@@ -100,7 +133,9 @@ class bulletTest(DirectObject):
 		inputState.watchWithModifiers('right', 'd')
 		inputState.watchWithModifiers('speedup', 'a')
 		inputState.watchWithModifiers('speeddown', 'w')
-		
+		self.pointerToGo = loader.loadModelCopy("arrow")
+		self.pointerToGo.reparentTo(render)
+		self.pointerToGo.hide()
 		self.loadZoneXml()
 		base.disableMouse()
 		base.camera.setPos(0,-300,50)
@@ -113,9 +148,25 @@ class bulletTest(DirectObject):
 		elif self.speed>100:
 			self.speed=100
 		
+	def pickmouse(self,task):
+		mpos=base.mouseWatcherNode.getMouse()
+		self.pickerRay.setFromLens(base.camNode, mpos.getX(), mpos.getY())
 
+		self.picker.traverse(render)
+		if self.pq.getNumEntries() > 0:
+			self.pq.sortEntries() #this is so we get the closest object
+			nodeInQueue=self.pq.getEntry(0).getIntoNodePath()
+			print nodeInQueue
+			self.pointToLookAt=self.pq.getEntry(0).getSurfacePoint(render)
+	
+		return task.cont
+		
+		
 	def toggleWireframe(self):
 		base.toggleWireframe()
+
+	def setMouseBtn(self, btn, value):
+		self.mousebtn[btn]=value
 
 	def toggleTexture(self):
 		base.toggleTexture()
@@ -127,10 +178,13 @@ class bulletTest(DirectObject):
 			self.debugNP.hide()
 			
 	def fire(self):
-		self.speed=1000
-		print "here"
-		#~ world,worldNP=shimCollider.getInstance(weapon.zone).getWorld()
-		visNP = loader.loadModel("sphere")
+		#~ mpos = base.mouseWatcherNode.getMouse()
+		#~ self.pickerRay.setFromLens(base.camNode, mpos.getX(), mpos.getY())
+ 
+		#~ base.cTrav.traverse(render)
+		#~ if myHandler.getNumEntries() > 0:
+				#~ self.collHandler.sortEntries()
+		visNP = loader.loadModel("sphere.bam")
 		geom = visNP.findAllMatches('**/+GeomNode').getPath(0).node().getGeom(0)			
 		shape=BulletConvexHullShape()
 		shape.addGeom(geom)
@@ -138,16 +192,65 @@ class bulletTest(DirectObject):
 		bodyNP = self.worldNP.attachNewNode(body)
 		bodyNP.node().addShape(shape)
 		bodyNP.node().setMass(0.0001)
-		#~ bodyNP.setPos(self.bodyNP.getPos())
-		bodyNP.setQuat(self.bodyNP.getQuat())
+		#~ x=base.mouseWatcherNode.getMouseX()
+		#~ y=base.mouseWatcherNode.getMouseY()
+		md = base.win.getPointer(0)
+		#~ x = md.getX()
+		#~ y = md.getY()
+		x=base.mouseWatcherNode.getMouseX()
+		y=base.mouseWatcherNode.getMouseY()
+		h=self.bodyNP.getH()
+		p=self.bodyNP.getP()
+		i=self.bodyNP.getQuat().getI()
+		j=self.bodyNP.getQuat().getJ()
+		k=self.bodyNP.getQuat().getK()
+		r=self.bodyNP.getQuat().getR()
+		
+	
+		self.pointerToGo.setPos(self.bodyNP.getPos())
+		self.pointerToGo.lookAt(self.pointToLookAt)
+		bodyNP.setQuat(self.pointerToGo.getQuat())
+		#~ bodyNP.setQuat(self.bodyNP.getQuat())
+		#~ ang=180*math.atan2(x,y)/3.14
+		#~ print ang
+		
+		#~ bodyNP.setH(bodyNP,x*ang*-1)
+		#~ bodyNP.setP(bodyNP,y*ang)
+		#~ h = h + (x - self.centerX) 
+		#~ p = p + (y - self.centerY) 
+		#~ if (p < -45): p = -45
+		#~ if (p >  45): p =  45
+		print (x,y)
+		print (h,p)
+		#~ negX=-1
+		#~ if h<0:
+			#~ negX=1
+		#~ negY=1
+		#~ if h<0:
+			#~ negY=- 1
+		
+		#~ x=55*+x*negX
+		#~ y=55*y*negY
+		#~ print(r,i,j,k)
+		#~ print self.bodyNP.getQuat()
+		#~ bodyNP.setHpr(h+30*self.factor*x,p+30*y,0)
+		#~ bodyNP.setHpr(h+x,p+y,0)
+		
+		#~ i=i+30*x
+		#~ j=j+30*y
+		
+		#~ bodyNP.setQuat(Quat(r,i,j,k))
+		print bodyNP.getHpr()
+		print self.bodyNP.getHpr()
+		#~ print bodyNP.getQuat()
+		print "######################"
 		bodyNP.setPos(self.bodyNP,Vec3(0,100,0))
-		#~ bodyNP.setPos((0,100,0))
 		bodyNP.setCollideMask(BitMask32.allOn())
 		#~ bodyNP.setPythonTag("obj",self)
 		self.world.attachRigidBody(bodyNP.node())
 		visNP.reparentTo(bodyNP)
 		forwardVec=bodyNP.getQuat().getForward()
-		bodyNP.node().setLinearVelocity(Vec3(forwardVec.getX()*self.speed,forwardVec.getY()*self.speed,forwardVec.getZ()*self.speed))
+		bodyNP.node().setLinearVelocity(Vec3(forwardVec.getX()*1000,forwardVec.getY()*1000,forwardVec.getZ()*1000))
 		self.bullet.append(body)
 	
 		
@@ -217,15 +320,15 @@ class bulletTest(DirectObject):
 			if absx>0.25 and absx<0.5:
 				x*=2
 			elif absx>=0.5 and absx<0.75:
-				x*=3
-			elif absx>=0.75:
 				x*=4
+			elif absx>=0.75:
+				x*=6
 			if absy>0.25 and absy<0.5:
 				y*=2
 			elif absy>=0.5 and absy<0.75:
-				y*=3
-			elif absy>=0.75:
 				y*=4
+			elif absy>=0.75:
+				y*=6
 				
 				
 		
@@ -248,14 +351,15 @@ class bulletTest(DirectObject):
 		self.bodyNP.node().setActive(True)		
 		#~ self.bodyNP.node().applyTorque  (Vec3(self.pyr['y']*300,0.0,self.pyr['p']*300))
 		forwardVec=self.bodyNP.getQuat().getForward()
-		v=Vec3(y*self.torque,0.0,x*self.torque)
-		v= self.worldNP.getRelativeVector(self.bodyNP,v) 
-		self.bodyNP.node().applyTorque(v)
+		if self.mousebtn[2]==1:
+			v=Vec3(y*self.torque,0.0,x*self.torque)
+			v= self.worldNP.getRelativeVector(self.bodyNP,v) 
+			self.bodyNP.node().applyTorque(v)
 		
 		self.bodyNP.node().applyCentralForce(Vec3(forwardVec.getX()*self.speed,forwardVec.getY()*self.speed,forwardVec.getZ()*self.speed))
 
 		self.bodyNP.node().setLinearVelocity((self.bodyNP.node().getLinearVelocity().getX()*0.98,self.bodyNP.node().getLinearVelocity().getY()*0.98,self.bodyNP.node().getLinearVelocity().getZ()*0.98))
-		self.bodyNP.node().setAngularVelocity((self.bodyNP.node().getAngularVelocity().getX()*0.9,self.bodyNP.node().getAngularVelocity().getY()*0.9,self.bodyNP.node().getAngularVelocity().getZ()*0.9))
+		#~ self.bodyNP.node().setAngularVelocity((self.bodyNP.node().getAngularVelocity().getX()*0.9,self.bodyNP.node().getAngularVelocity().getY()*0.9,self.bodyNP.node().getAngularVelocity().getZ()*0.9))
 		
 		self.world.doPhysics(dt)
 
@@ -263,10 +367,11 @@ class bulletTest(DirectObject):
 		hprCam = self.bodyNP.getHpr()*0.9 + base.camera.getHpr()*0.1
 		base.camera.setPos(mvtCam)
 		base.camera.setHpr(hprCam)
+		#~ base.camera.lookAt(base.mouse)
 		
 		av=self.bodyNP.node().getAngularVelocity()
 		#~ print av
-		av2=av*0.8
+		av2=av*0.72
 		self.bodyNP.node().setAngularVelocity(av2)
 		
 	
@@ -274,11 +379,11 @@ class bulletTest(DirectObject):
 		#~ print self.bodyNP.getHpr()
 		
 		#~ print "###########"
-		for b in self.bullet:
-			result = self.world.contactTest(b)
-			for contact in result.getContacts():
-				print contact.getNode0()
-				print contact.getNode1()
+		#~ for b in self.bullet:
+			#~ result = self.world.contactTest(b)
+			#~ for contact in result.getContacts():
+				#~ print contact.getNode0()
+				#~ print contact.getNode1()
 		#~ ghost = self.bodyNP2.node()
 		
 		#~ for node in result.getContacts():
