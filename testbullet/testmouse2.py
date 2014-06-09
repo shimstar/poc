@@ -16,6 +16,7 @@ from panda3d.bullet import BulletDebugNode
 
 class bulletTest(DirectObject):
 	def __init__(self):
+		self.listOfAsteroid={}
 		self.windowSizeX = base.win.getXSize()
 		self.windowSizeY = base.win.getYSize()
 		self.centerX = self.windowSizeX / 2
@@ -156,9 +157,22 @@ class bulletTest(DirectObject):
 		if self.pq.getNumEntries() > 0:
 			self.pq.sortEntries() #this is so we get the closest object
 			nodeInQueue=self.pq.getEntry(0).getIntoNodePath()
-			print nodeInQueue
-			self.pointToLookAt=self.pq.getEntry(0).getSurfacePoint(render)
-	
+			#~ print self.pq.getEntry(0).getInteriorPoint(nodeInQueue)
+			#~ print nodeInQueue.getPos()
+			#~ print nodeInQueue
+			
+				#~ print index
+				#~ print str(nodeInQueue)[index:index+6]
+			print nodeInQueue.getTag("id")
+			print nodeInQueue.getTag("name")
+			self.pointToLookAt=None
+			if str(nodeInQueue).find('earth')==-1:
+				if str(nodeInQueue).find("Ast_")>0:
+					index= str(nodeInQueue).find("Ast_")
+					ast=str(nodeInQueue)[index:index+6]
+					self.pointToLookAt=self.listOfAsteroid[ast].getPos()
+					#~ print self.pointToLookAt
+			
 		return task.cont
 		
 		
@@ -192,6 +206,7 @@ class bulletTest(DirectObject):
 		bodyNP = self.worldNP.attachNewNode(body)
 		bodyNP.node().addShape(shape)
 		bodyNP.node().setMass(0.0001)
+		bodyNP.setPos(self.bodyNP,Vec3(0,100,0))
 		#~ x=base.mouseWatcherNode.getMouseX()
 		#~ y=base.mouseWatcherNode.getMouseY()
 		md = base.win.getPointer(0)
@@ -206,10 +221,29 @@ class bulletTest(DirectObject):
 		k=self.bodyNP.getQuat().getK()
 		r=self.bodyNP.getQuat().getR()
 		
-	
-		self.pointerToGo.setPos(self.bodyNP.getPos())
-		self.pointerToGo.lookAt(self.pointToLookAt)
-		bodyNP.setQuat(self.pointerToGo.getQuat())
+		pp=LVector3f()
+		#~ lens = PerspectiveLens()
+		#~ lens.setFilmSize(20, 15)
+		#~ base.camLens.setNearFar(10, 5000)
+		t1=Point3()
+		t2=Point3()
+		#~ ret=base.camLens.extrudeVec(Point2(x,y),pp)
+		
+		
+		#    ~ print ret
+		#~ print "pp =  " + str(pp)
+		#~ print t1
+		#~ print t2
+		if self.pointToLookAt!=None:
+			bodyNP.lookAt(self.pointToLookAt)
+		else:
+			ret=base.camLens.extrude(Point2(x,y),t1,t2)
+			t2=t2/100
+			t2relative=render.getRelativePoint(camera,t2)   	
+			bodyNP.lookAt(t2relative)
+		#~ self.pointerToGo.setPos(self.bodyNP.getPos())
+		#~ self.pointerToGo.lookAt(self.pointToLookAt)
+		#~ bodyNP.setQuat(self.pointerToGo.getQuat())
 		#~ bodyNP.setQuat(self.bodyNP.getQuat())
 		#~ ang=180*math.atan2(x,y)/3.14
 		#~ print ang
@@ -244,7 +278,7 @@ class bulletTest(DirectObject):
 		print self.bodyNP.getHpr()
 		#~ print bodyNP.getQuat()
 		print "######################"
-		bodyNP.setPos(self.bodyNP,Vec3(0,100,0))
+		
 		bodyNP.setCollideMask(BitMask32.allOn())
 		#~ bodyNP.setPythonTag("obj",self)
 		self.world.attachRigidBody(bodyNP.node())
@@ -289,12 +323,13 @@ class bulletTest(DirectObject):
 				self.bodyNPAst = self.worldNP.attachNewNode(body)
 				self.bodyNPAst.node().addShape(shape)
 				self.bodyNPAst.setTag("name","ast")
+				self.bodyNPAst.node().setTag("id",str(j))
 
 				self.bodyNPAst.setPos((posx,posy,posz))
 				self.bodyNPAst.setHpr((h,p,r))
 				self.bodyNPAst.setCollideMask(BitMask32.allOn())
 				self.world.attachRigidBody(self.bodyNPAst.node())
-
+				self.listOfAsteroid[name]=self.bodyNPAst
 				visNP.reparentTo(self.bodyNPAst)
 			j+=1
 
